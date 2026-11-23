@@ -1,0 +1,17 @@
+
+# Archivos de compilacion
+cmake-build-debug/
+cmake-build-release/
+build/
+
+# Configuracion local de CLion
+.idea/
+
+# Archivos ejecutables
+*.exe
+*.out
+*.o
+*.obj
+
+# Archivos temporales
+*.log
