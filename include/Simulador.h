@@ -41,6 +41,7 @@ public:
     void moverDerecha();
     void tratarPaciente();
     void darAltaPaciente();
+    void buscarPaciente();
 };
 
 #endif
