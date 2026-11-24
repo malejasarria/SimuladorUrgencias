@@ -35,6 +35,8 @@ public:
     Simulador(std::string nombreMedico);
 
     void iniciar();
+    void registrarPaciente();
+    void recibirPaciente();
 };
 
 #endif
