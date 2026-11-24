@@ -137,6 +137,3 @@ void ListaCamas::mostrarAtras() const {
         actual = actual->getAnterior();
     }
 }
-//
-// Created by Asus on 23/11/2026.
-//
