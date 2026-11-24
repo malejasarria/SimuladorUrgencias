@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <limits>
+#include <vector>
 
 // CONSTRUCTOR DEL SIMULADOR
 Simulador::Simulador(std::string nombreMedico) {
@@ -23,6 +24,41 @@ Simulador::Simulador(std::string nombreMedico) {
 
     if (medicoActual != nullptr) {
         medicoActual->iniciarJornada();
+    }
+}
+
+// FINALIZAR TURNO Y ACTUALIZAR PACIENTES EN ESPERA
+void Simulador::finalizarTurno() {
+
+    turnoActual++;
+    medicoActual->registrarTurno();
+
+    std::vector<std::shared_ptr<Paciente>> perdidos =
+        colaPrioridad.actualizarEsperaYRetirarPerdidos();
+
+    for (const auto& paciente : perdidos) {
+
+        paciente->asignarMedico(medicoActual->getNombre());
+
+        pacientesPerdidos++;
+
+        std::cout << "\n====================================\n";
+        std::cout << " ALERTA: PACIENTE CRITICO PERDIDO\n";
+        std::cout << "====================================\n";
+
+        std::cout << "Paciente: "
+                  << paciente->getNombre() << std::endl;
+
+        std::cout << "Cedula: "
+                  << paciente->getCedula() << std::endl;
+
+        std::cout << "Medico responsable: "
+                  << medicoActual->getNombre() << std::endl;
+
+        std::cout << "Turnos esperando: "
+                  << paciente->getTurnosEnCola() << std::endl;
+
+        std::cout << "El paciente permanece en el historial.\n";
     }
 }
 
@@ -61,8 +97,14 @@ void Simulador::registrarPaciente() {
 
     if (!(std::cin >> gravedad)) {
         std::cout << "\nEntrada no valida.\n";
+
         std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        std::cin.ignore(
+            std::numeric_limits<std::streamsize>::max(),
+            '\n'
+        );
+
         return;
     }
 
@@ -123,8 +165,7 @@ void Simulador::recibirPaciente() {
     pacientesRecibidos++;
     tiempoEsperaTotal += paciente->getTiempoEspera();
 
-    turnoActual++;
-    medicoActual->registrarTurno();
+    finalizarTurno();
 
     std::cout << "\nPaciente recibido correctamente.\n";
 
@@ -150,8 +191,7 @@ void Simulador::moverIzquierda() {
         std::cout << "\nEl medico ya esta en la primera cama.\n";
     }
 
-    turnoActual++;
-    medicoActual->registrarTurno();
+    finalizarTurno();
 }
 
 // MOVER MEDICO A LA DERECHA
@@ -171,8 +211,7 @@ void Simulador::moverDerecha() {
         std::cout << "\nEl medico ya esta en la ultima cama.\n";
     }
 
-    turnoActual++;
-    medicoActual->registrarTurno();
+    finalizarTurno();
 }
 
 // TRATAR PACIENTE DE LA CAMA ACTUAL
@@ -201,12 +240,12 @@ void Simulador::tratarPaciente() {
 
     paciente->reducirTratamiento();
 
-    turnoActual++;
-    medicoActual->registrarTurno();
+    finalizarTurno();
 
     std::cout << "\nSe realizo un tratamiento correctamente.\n";
 
-    std::cout << "\nPaciente: " << paciente->getNombre();
+    std::cout << "\nPaciente: "
+              << paciente->getNombre();
 
     std::cout << "\nTratamientos pendientes: "
               << paciente->getTurnosTratamiento() << std::endl;
@@ -257,14 +296,15 @@ void Simulador::darAltaPaciente() {
 
     pacientesDadosDeAlta++;
 
-    turnoActual++;
-    medicoActual->registrarTurno();
+    finalizarTurno();
 
     std::cout << "\nAlta medica realizada correctamente.\n";
 
-    std::cout << "Paciente: " << paciente->getNombre() << std::endl;
+    std::cout << "Paciente: "
+              << paciente->getNombre() << std::endl;
 
-    std::cout << "La cama " << camaActual << " quedo disponible.\n";
+    std::cout << "La cama "
+              << camaActual << " quedo disponible.\n";
 }
 
 // BUSCAR PACIENTE POR CEDULA EN LA TABLA HASH

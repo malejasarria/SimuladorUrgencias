@@ -30,6 +30,7 @@ private:
     int tiempoEsperaTotal;
 
     void mostrarEstado();
+    void finalizarTurno();
 
 public:
     Simulador(std::string nombreMedico);

@@ -4,6 +4,7 @@
 
 #include "Paciente.h"
 #include <memory>
+#include <vector>
 
 class ColaPrioridad {
 
@@ -35,6 +36,9 @@ public:
     int getCantidad() const;
 
     void mostrarCola() const;
+
+    std::vector<std::shared_ptr<Paciente>>
+    actualizarEsperaYRetirarPerdidos();
 };
 
 #endif

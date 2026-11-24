@@ -25,7 +25,6 @@ ColaPrioridad::~ColaPrioridad() {
     }
 }
 
-
 void ColaPrioridad::encolar(std::shared_ptr<Paciente> paciente) {
 
     if (paciente == nullptr) {
@@ -40,20 +39,20 @@ void ColaPrioridad::encolar(std::shared_ptr<Paciente> paciente) {
         nuevo->siguiente = frente;
         frente = nuevo;
 
-        } else {
+    } else {
 
-            Nodo* actual = frente;
+        Nodo* actual = frente;
 
-            while (actual->siguiente != nullptr &&
-                   actual->siguiente->paciente->getGravedad()
-                   <= paciente->getGravedad()) {
+        while (actual->siguiente != nullptr &&
+               actual->siguiente->paciente->getGravedad()
+               <= paciente->getGravedad()) {
 
-                actual = actual->siguiente;
-                   }
-
-            nuevo->siguiente = actual->siguiente;
-            actual->siguiente = nuevo;
+            actual = actual->siguiente;
         }
+
+        nuevo->siguiente = actual->siguiente;
+        actual->siguiente = nuevo;
+    }
 
     cantidad++;
 }
@@ -114,8 +113,59 @@ void ColaPrioridad::mostrarCola() const {
                   << actual->paciente->getNombre()
                   << " | Gravedad: "
                   << actual->paciente->getGravedad()
+                  << " | Espera: "
+                  << actual->paciente->getTiempoEspera()
+                  << " minutos"
+                  << " | Turnos: "
+                  << actual->paciente->getTurnosEnCola()
                   << std::endl;
 
         actual = actual->siguiente;
     }
+}
+
+std::vector<std::shared_ptr<Paciente>>
+ColaPrioridad::actualizarEsperaYRetirarPerdidos() {
+
+    std::vector<std::shared_ptr<Paciente>> pacientesPerdidos;
+
+    Nodo* actual = frente;
+    Nodo* anterior = nullptr;
+
+    while (actual != nullptr) {
+
+        actual->paciente->incrementarEspera();
+        actual->paciente->incrementarTurnosEnCola();
+
+        if (actual->paciente->getGravedad() == 1 &&
+            actual->paciente->getTurnosEnCola() > 6) {
+
+            std::shared_ptr<Paciente> perdido = actual->paciente;
+
+            perdido->cambiarEstado("Perdido");
+
+            Nodo* temporal = actual;
+
+            if (anterior == nullptr) {
+                frente = actual->siguiente;
+            } else {
+                anterior->siguiente = actual->siguiente;
+            }
+
+            actual = actual->siguiente;
+
+            delete temporal;
+
+            cantidad--;
+
+            pacientesPerdidos.push_back(perdido);
+
+        } else {
+
+            anterior = actual;
+            actual = actual->siguiente;
+        }
+    }
+
+    return pacientesPerdidos;
 }

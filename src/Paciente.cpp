@@ -14,6 +14,8 @@ Paciente::Paciente(std::string cedula, std::string nombre,
 
     tiempoEspera = 0;
     turnosTratamiento = 6 - gravedad;
+    turnosEnCola = 0;
+
     estado = "En cola";
     medicoAsignado = "Sin asignar";
 }
@@ -42,8 +44,16 @@ int Paciente::getTurnosTratamiento() const {
     return turnosTratamiento;
 }
 
+int Paciente::getTurnosEnCola() const {
+    return turnosEnCola;
+}
+
 void Paciente::incrementarEspera() {
-    tiempoEspera++;
+    tiempoEspera += 5;
+}
+
+void Paciente::incrementarTurnosEnCola() {
+    turnosEnCola++;
 }
 
 void Paciente::reducirTratamiento() {
@@ -68,7 +78,11 @@ void Paciente::mostrarInformacion() const {
     std::cout << "Nombre: " << nombre << std::endl;
     std::cout << "Gravedad: " << gravedad << std::endl;
     std::cout << "Condicion: " << condicion << std::endl;
-    std::cout << "Tiempo de espera: " << tiempoEspera << std::endl;
+    std::cout << "Tiempo de espera: " << tiempoEspera
+              << " minutos" << std::endl;
+
+    std::cout << "Turnos en cola: "
+              << turnosEnCola << std::endl;
 
     std::cout << "Tratamientos pendientes: "
               << turnosTratamiento << std::endl;

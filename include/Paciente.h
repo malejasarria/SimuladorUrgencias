@@ -17,6 +17,7 @@ private:
     int turnoLlegada;
     int tiempoEspera;
     int turnosTratamiento;
+    int turnosEnCola;
 
 public:
 
@@ -30,8 +31,10 @@ public:
     int getGravedad() const;
     int getTiempoEspera() const;
     int getTurnosTratamiento() const;
+    int getTurnosEnCola() const;
 
     void incrementarEspera();
+    void incrementarTurnosEnCola();
     void reducirTratamiento();
 
     void asignarMedico(std::string medico);
