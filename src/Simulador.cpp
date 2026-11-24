@@ -237,6 +237,53 @@ void Simulador::tratarPaciente() {
 }
 
 
+// DAR ALTA A UN PACIENTE
+void Simulador::darAltaPaciente() {
+
+    std::cout << "\n========== ALTA MEDICA ==========\n";
+
+    if (medicoActual == nullptr) {
+        std::cout << "\nNo hay un medico activo.\n";
+        return;
+    }
+
+    Cama* cama = camas.buscarCama(camaActual);
+
+    if (cama == nullptr || cama->estaVacia()) {
+        std::cout << "\nNo hay ningun paciente en esta cama.\n";
+        return;
+    }
+
+    std::shared_ptr<Paciente> paciente = cama->getPaciente();
+
+    if (paciente->getTurnosTratamiento() > 0) {
+        std::cout << "\nEl paciente todavia no ha completado su tratamiento.\n";
+
+        std::cout << "Tratamientos pendientes: "
+                  << paciente->getTurnosTratamiento() << std::endl;
+
+        return;
+    }
+
+    paciente->cambiarEstado("Dado de alta");
+
+    pilaAtendidos.apilar(paciente);
+
+    camas.liberarCama(camaActual);
+
+    pacientesDadosDeAlta++;
+
+    turnoActual++;
+    medicoActual->registrarTurno();
+
+    std::cout << "\nAlta medica realizada correctamente.\n";
+
+    std::cout << "Paciente: " << paciente->getNombre() << std::endl;
+
+    std::cout << "La cama " << camaActual << " quedo disponible.\n";
+}
+
+
 // MOSTRAR ESTADO DEL SIMULADOR
 void Simulador::mostrarEstado() {
 
@@ -292,6 +339,7 @@ void Simulador::iniciar() {
         std::cout << "\n4. Mover izquierda (A)";
         std::cout << "\n5. Mover derecha (D)";
         std::cout << "\n6. Tratar paciente (T)";
+        std::cout << "\n7. Dar alta al paciente (X)";
         std::cout << "\n0. Salir";
 
         std::cout << "\nSelecciona una opcion: ";
@@ -334,6 +382,10 @@ void Simulador::iniciar() {
 
             case 6:
                 tratarPaciente();
+                break;
+
+            case 7:
+                darAltaPaciente();
                 break;
 
             case 0:

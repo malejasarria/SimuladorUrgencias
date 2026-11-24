@@ -40,6 +40,7 @@ public:
     void moverIzquierda();
     void moverDerecha();
     void tratarPaciente();
+    void darAltaPaciente();
 };
 
 #endif
