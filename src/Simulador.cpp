@@ -4,6 +4,7 @@
 #include <memory>
 #include <limits>
 
+// CONSTRUCTOR DEL SIMULADOR
 Simulador::Simulador(std::string nombreMedico) {
 
     medicoActual = nullptr;
@@ -81,7 +82,6 @@ void Simulador::registrarPaciente() {
         );
 
     colaPrioridad.encolar(nuevoPaciente);
-
     historial.insertar(nuevoPaciente);
 
     std::cout << "\nPaciente registrado correctamente.\n";
@@ -102,7 +102,6 @@ void Simulador::recibirPaciente() {
         return;
     }
 
-    // Verificar que la cama actual este vacia.
     Cama* cama = camas.buscarCama(camaActual);
 
     if (cama == nullptr || !cama->estaVacia()) {
@@ -111,25 +110,22 @@ void Simulador::recibirPaciente() {
         return;
     }
 
-    // Verificar que haya pacientes esperando.
     if (colaPrioridad.estaVacia()) {
         std::cout << "\nNo hay pacientes en la cola de prioridad.\n";
         return;
     }
 
-    // Obtener el paciente con mayor prioridad.
     std::shared_ptr<Paciente> paciente = colaPrioridad.desencolar();
 
-    // Asignar el medico y cambiar el estado.
     paciente->asignarMedico(medicoActual->getNombre());
     paciente->cambiarEstado("En tratamiento");
 
-    // Asignar el paciente a la cama actual.
     camas.asignarPaciente(camaActual, paciente);
 
     pacientesRecibidos++;
 
-    // Registrar el turno del medico.
+    tiempoEsperaTotal += paciente->getTiempoEspera();
+
     turnoActual++;
     medicoActual->registrarTurno();
 
@@ -138,6 +134,106 @@ void Simulador::recibirPaciente() {
     paciente->mostrarInformacion();
 
     std::cout << "\nAsignado a la cama #" << camaActual << ".\n";
+}
+
+
+// MOVER MEDICO A LA IZQUIERDA
+void Simulador::moverIzquierda() {
+
+    if (medicoActual == nullptr) {
+        std::cout << "\nNo hay un medico activo.\n";
+        return;
+    }
+
+    if (camaActual > 1) {
+
+        camaActual--;
+
+        std::cout << "\nEl medico se movio a la cama "
+                  << camaActual << ".\n";
+
+    } else {
+
+        std::cout << "\nEl medico ya esta en la primera cama.\n";
+    }
+
+    turnoActual++;
+    medicoActual->registrarTurno();
+}
+
+
+// MOVER MEDICO A LA DERECHA
+void Simulador::moverDerecha() {
+
+    if (medicoActual == nullptr) {
+        std::cout << "\nNo hay un medico activo.\n";
+        return;
+    }
+
+    if (camaActual < 10) {
+
+        camaActual++;
+
+        std::cout << "\nEl medico se movio a la cama "
+                  << camaActual << ".\n";
+
+    } else {
+
+        std::cout << "\nEl medico ya esta en la ultima cama.\n";
+    }
+
+    turnoActual++;
+    medicoActual->registrarTurno();
+}
+
+
+// TRATAR PACIENTE DE LA CAMA ACTUAL
+void Simulador::tratarPaciente() {
+
+    std::cout << "\n========== TRATAMIENTO DE PACIENTE ==========\n";
+
+    if (medicoActual == nullptr) {
+        std::cout << "\nNo hay un medico activo.\n";
+        return;
+    }
+
+    Cama* cama = camas.buscarCama(camaActual);
+
+    if (cama == nullptr || cama->estaVacia()) {
+        std::cout << "\nNo hay ningun paciente en esta cama.\n";
+        return;
+    }
+
+    std::shared_ptr<Paciente> paciente = cama->getPaciente();
+
+    if (paciente->getTurnosTratamiento() <= 0) {
+        std::cout << "\nEl paciente ya completo su tratamiento.\n";
+        return;
+    }
+
+    paciente->reducirTratamiento();
+
+    turnoActual++;
+    medicoActual->registrarTurno();
+
+    std::cout << "\nSe realizo un tratamiento correctamente.\n";
+
+    std::cout << "\nPaciente: " << paciente->getNombre();
+
+    std::cout << "\nTratamientos pendientes: "
+              << paciente->getTurnosTratamiento() << std::endl;
+
+    if (paciente->getTurnosTratamiento() == 0) {
+
+        paciente->cambiarEstado("Tratamiento completado");
+
+        std::cout << "\nEl paciente ha completado todos sus tratamientos.\n";
+        std::cout << "Ya puede recibir el alta medica.\n";
+
+    } else {
+
+        std::cout << "\nEl paciente todavia necesita tratamiento.\n";
+    }
 }
 
 
@@ -193,7 +289,11 @@ void Simulador::iniciar() {
         std::cout << "\n1. Registrar paciente en Triage";
         std::cout << "\n2. Actualizar estado";
         std::cout << "\n3. Recibir paciente (R)";
+        std::cout << "\n4. Mover izquierda (A)";
+        std::cout << "\n5. Mover derecha (D)";
+        std::cout << "\n6. Tratar paciente (T)";
         std::cout << "\n0. Salir";
+
         std::cout << "\nSelecciona una opcion: ";
 
         if (!(std::cin >> opcion)) {
@@ -222,6 +322,18 @@ void Simulador::iniciar() {
 
             case 3:
                 recibirPaciente();
+                break;
+
+            case 4:
+                moverIzquierda();
+                break;
+
+            case 5:
+                moverDerecha();
+                break;
+
+            case 6:
+                tratarPaciente();
                 break;
 
             case 0:

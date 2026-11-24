@@ -37,6 +37,9 @@ public:
     void iniciar();
     void registrarPaciente();
     void recibirPaciente();
+    void moverIzquierda();
+    void moverDerecha();
+    void tratarPaciente();
 };
 
 #endif
