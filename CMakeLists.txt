@@ -17,6 +17,8 @@ add_executable(SimuladorUrgencias
         src/TablaHash.cpp
         include/ArbolMedicos.h
         src/ArbolMedicos.cpp
+        include/Simulador.h
+        src/Simulador.cpp
 )
 
 target_include_directories(SimuladorUrgencias PRIVATE
