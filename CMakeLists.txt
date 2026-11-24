@@ -13,6 +13,7 @@ add_executable(SimuladorUrgencias
         src/Cama.cpp
         src/ListaCamas.cpp
         src/ColaPrioridad.cpp
+        src/PilaAtendidos.cpp
 )
 
 target_include_directories(SimuladorUrgencias PRIVATE
