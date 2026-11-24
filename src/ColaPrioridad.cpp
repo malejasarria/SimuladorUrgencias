@@ -25,6 +25,7 @@ ColaPrioridad::~ColaPrioridad() {
     }
 }
 
+
 void ColaPrioridad::encolar(std::shared_ptr<Paciente> paciente) {
 
     if (paciente == nullptr) {
@@ -34,25 +35,25 @@ void ColaPrioridad::encolar(std::shared_ptr<Paciente> paciente) {
     Nodo* nuevo = new Nodo(paciente);
 
     if (frente == nullptr ||
-        paciente->getGravedad() > frente->paciente->getGravedad()) {
+        paciente->getGravedad() < frente->paciente->getGravedad()) {
 
         nuevo->siguiente = frente;
         frente = nuevo;
 
-    } else {
+        } else {
 
-        Nodo* actual = frente;
+            Nodo* actual = frente;
 
-        while (actual->siguiente != nullptr &&
-               actual->siguiente->paciente->getGravedad()
-               >= paciente->getGravedad()) {
+            while (actual->siguiente != nullptr &&
+                   actual->siguiente->paciente->getGravedad()
+                   <= paciente->getGravedad()) {
 
-            actual = actual->siguiente;
+                actual = actual->siguiente;
+                   }
+
+            nuevo->siguiente = actual->siguiente;
+            actual->siguiente = nuevo;
         }
-
-        nuevo->siguiente = actual->siguiente;
-        actual->siguiente = nuevo;
-    }
 
     cantidad++;
 }

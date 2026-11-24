@@ -26,6 +26,10 @@ std::string Paciente::getNombre() const {
     return nombre;
 }
 
+std::string Paciente::getEstado() const {
+    return estado;
+}
+
 int Paciente::getGravedad() const {
     return gravedad;
 }

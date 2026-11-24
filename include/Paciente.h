@@ -26,6 +26,7 @@ public:
 
     std::string getCedula() const;
     std::string getNombre() const;
+    std::string getEstado() const;
     int getGravedad() const;
     int getTiempoEspera() const;
     int getTurnosTratamiento() const;
