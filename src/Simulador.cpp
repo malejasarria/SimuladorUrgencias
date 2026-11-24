@@ -27,8 +27,37 @@ Simulador::Simulador(std::string nombreMedico) {
     }
 }
 
+// COMPROBAR SI EL MEDICO PUEDE REALIZAR UNA ACCION
+bool Simulador::puedeRealizarAccion() const {
+
+    if (medicoActual == nullptr) {
+        std::cout << "\nNo hay un medico activo.\n";
+        return false;
+    }
+
+    if (turnoActual >= 50) {
+        std::cout << "\n====================================\n";
+        std::cout << " JORNADA COMPLETADA\n";
+        std::cout << "====================================\n";
+
+        std::cout << "El medico "
+                  << medicoActual->getNombre()
+                  << " completo sus 50 turnos.\n";
+
+        std::cout << "Debe cambiar de medico con la opcion O.\n";
+
+        return false;
+    }
+
+    return true;
+}
+
 // FINALIZAR TURNO Y ACTUALIZAR PACIENTES EN ESPERA
 void Simulador::finalizarTurno() {
+
+    if (medicoActual == nullptr) {
+        return;
+    }
 
     turnoActual++;
     medicoActual->registrarTurno();
@@ -59,6 +88,15 @@ void Simulador::finalizarTurno() {
                   << paciente->getTurnosEnCola() << std::endl;
 
         std::cout << "El paciente permanece en el historial.\n";
+    }
+
+    if (turnoActual == 50) {
+
+        std::cout << "\n====================================\n";
+        std::cout << " EL MEDICO COMPLETO SUS 50 TURNOS\n";
+        std::cout << "====================================\n";
+
+        std::cout << "Utilice la opcion O para cambiar de medico.\n";
     }
 }
 
@@ -96,6 +134,7 @@ void Simulador::registrarPaciente() {
     std::cout << "Seleccione la gravedad: ";
 
     if (!(std::cin >> gravedad)) {
+
         std::cout << "\nEntrada no valida.\n";
 
         std::cin.clear();
@@ -137,8 +176,7 @@ void Simulador::recibirPaciente() {
 
     std::cout << "\n========== RECEPCION DE PACIENTE ==========\n";
 
-    if (medicoActual == nullptr) {
-        std::cout << "\nNo hay un medico activo.\n";
+    if (!puedeRealizarAccion()) {
         return;
     }
 
@@ -177,17 +215,19 @@ void Simulador::recibirPaciente() {
 // MOVER MEDICO A LA IZQUIERDA
 void Simulador::moverIzquierda() {
 
-    if (medicoActual == nullptr) {
-        std::cout << "\nNo hay un medico activo.\n";
+    if (!puedeRealizarAccion()) {
         return;
     }
 
     if (camaActual > 1) {
+
         camaActual--;
 
         std::cout << "\nEl medico se movio a la cama "
                   << camaActual << ".\n";
+
     } else {
+
         std::cout << "\nEl medico ya esta en la primera cama.\n";
     }
 
@@ -197,17 +237,19 @@ void Simulador::moverIzquierda() {
 // MOVER MEDICO A LA DERECHA
 void Simulador::moverDerecha() {
 
-    if (medicoActual == nullptr) {
-        std::cout << "\nNo hay un medico activo.\n";
+    if (!puedeRealizarAccion()) {
         return;
     }
 
     if (camaActual < 10) {
+
         camaActual++;
 
         std::cout << "\nEl medico se movio a la cama "
                   << camaActual << ".\n";
+
     } else {
+
         std::cout << "\nEl medico ya esta en la ultima cama.\n";
     }
 
@@ -219,8 +261,7 @@ void Simulador::tratarPaciente() {
 
     std::cout << "\n========== TRATAMIENTO DE PACIENTE ==========\n";
 
-    if (medicoActual == nullptr) {
-        std::cout << "\nNo hay un medico activo.\n";
+    if (!puedeRealizarAccion()) {
         return;
     }
 
@@ -251,11 +292,14 @@ void Simulador::tratarPaciente() {
               << paciente->getTurnosTratamiento() << std::endl;
 
     if (paciente->getTurnosTratamiento() == 0) {
+
         paciente->cambiarEstado("Tratamiento completado");
 
         std::cout << "\nEl paciente ha completado todos sus tratamientos.\n";
         std::cout << "Ya puede recibir el alta medica.\n";
+
     } else {
+
         std::cout << "\nEl paciente todavia necesita tratamiento.\n";
     }
 }
@@ -265,8 +309,7 @@ void Simulador::darAltaPaciente() {
 
     std::cout << "\n========== ALTA MEDICA ==========\n";
 
-    if (medicoActual == nullptr) {
-        std::cout << "\nNo hay un medico activo.\n";
+    if (!puedeRealizarAccion()) {
         return;
     }
 
@@ -280,6 +323,7 @@ void Simulador::darAltaPaciente() {
     std::shared_ptr<Paciente> paciente = cama->getPaciente();
 
     if (paciente->getTurnosTratamiento() > 0) {
+
         std::cout << "\nEl paciente todavia no ha completado su tratamiento.\n";
 
         std::cout << "Tratamientos pendientes: "
@@ -329,6 +373,63 @@ void Simulador::buscarPaciente() {
     paciente->mostrarInformacion();
 }
 
+// CAMBIAR DE MEDICO
+void Simulador::cambiarMedico() {
+
+    std::string nombreNuevo;
+
+    std::cout << "\n========== CAMBIO DE MEDICO ==========\n";
+
+    std::cout << "Nombre del nuevo medico: ";
+
+    std::getline(std::cin >> std::ws, nombreNuevo);
+
+    if (nombreNuevo.empty()) {
+        std::cout << "\nEl nombre no puede estar vacio.\n";
+        return;
+    }
+
+    Medico* nuevoMedico = arbolMedicos.buscar(nombreNuevo);
+
+    if (nuevoMedico == nullptr) {
+
+        arbolMedicos.insertar(Medico(nombreNuevo));
+
+        nuevoMedico = arbolMedicos.buscar(nombreNuevo);
+    }
+
+    if (nuevoMedico == nullptr) {
+        std::cout << "\nNo fue posible registrar el nuevo medico.\n";
+        return;
+    }
+
+    // Vaciar la pila del medico anterior
+    pilaAtendidos.vaciar();
+
+    // Asignar el nuevo medico
+    medicoActual = nuevoMedico;
+
+    // Iniciar una nueva jornada
+    medicoActual->iniciarJornada();
+
+    // Reiniciar posicion y turno
+    turnoActual = 0;
+    camaActual = 1;
+
+    std::cout << "\nCambio de medico realizado correctamente.\n";
+
+    std::cout << "Medico actual: "
+              << medicoActual->getNombre() << std::endl;
+
+    std::cout << "Nueva jornada: "
+              << medicoActual->getJornadasTrabajadas() << std::endl;
+
+    std::cout << "Turnos disponibles: 50\n";
+    std::cout << "Posicion inicial: cama 1\n";
+
+    std::cout << "\nLa cola, las camas y el historial se conservaron.\n";
+}
+
 // MOSTRAR ESTADO DEL SIMULADOR
 void Simulador::mostrarEstado() {
 
@@ -342,13 +443,15 @@ void Simulador::mostrarEstado() {
         std::cout << medicoActual->getNombre();
     }
 
-    std::cout << "\nTurno actual: " << turnoActual;
+    std::cout << "\nTurno actual: " << turnoActual << "/50";
     std::cout << "\nCama actual del medico: " << camaActual;
 
     std::cout << "\n\n--- ESTADO DE LAS CAMAS ---\n";
+
     camas.mostrarAdelante();
 
     std::cout << "\n--- COLA DE PRIORIDAD ---\n";
+
     colaPrioridad.mostrarCola();
 
     std::cout << "\n--- RESUMEN ---\n";
@@ -365,20 +468,24 @@ void Simulador::mostrarEstado() {
     std::cout << "Camas disponibles: "
               << camas.contarDisponibles() << std::endl;
 
+    std::cout << "\nTurnos restantes del medico: "
+              << 50 - turnoActual << std::endl;
+
     std::cout << "\n====================================\n";
 }
 
 // MENU PRINCIPAL
 void Simulador::iniciar() {
 
-    int opcion;
+    int opcion = -1;
 
     do {
 
         mostrarEstado();
 
+        std::cout << "\n========== MENU DE ACCIONES ==========\n";
+
         std::cout << "\n1. Registrar paciente en Triage";
-        std::cout << "\n2. Actualizar estado";
         std::cout << "\n3. Recibir paciente (R)";
         std::cout << "\n4. Mover izquierda (A)";
         std::cout << "\n5. Mover derecha (D)";
@@ -386,9 +493,17 @@ void Simulador::iniciar() {
         std::cout << "\n7. Dar alta al paciente (X)";
         std::cout << "\n8. Mostrar pacientes dados de alta (U)";
         std::cout << "\n9. Buscar paciente por cedula (C)";
-        std::cout << "\n0. Salir";
+        std::cout << "\n10. Cambiar de medico (O)";
+        std::cout << "\n11. Terminar turno anticipadamente (E)";
+        std::cout << "\n0. Salir del programa";
 
-        std::cout << "\nSelecciona una opcion: ";
+        if (turnoActual >= 50) {
+
+            std::cout << "\n\nATENCION: El medico completo sus 50 turnos.";
+            std::cout << "\nSolo puede cambiar de medico o terminar.\n";
+        }
+
+        std::cout << "\n\nSelecciona una opcion: ";
 
         if (!(std::cin >> opcion)) {
 
@@ -408,10 +523,6 @@ void Simulador::iniciar() {
 
             case 1:
                 registrarPaciente();
-                break;
-
-            case 2:
-                std::cout << "\nEstado actualizado.\n";
                 break;
 
             case 3:
@@ -435,12 +546,29 @@ void Simulador::iniciar() {
                 break;
 
             case 8:
+
                 std::cout << "\n========== PILA DE PACIENTES DADOS DE ALTA ==========\n";
+
                 pilaAtendidos.mostrarPila();
                 break;
 
             case 9:
                 buscarPaciente();
+                break;
+
+            case 10:
+                cambiarMedico();
+                break;
+
+            case 11:
+
+                std::cout << "\nTurno terminado anticipadamente.\n";
+
+                std::cout << "Medico: "
+                          << medicoActual->getNombre() << std::endl;
+
+                std::cout << "Turnos realizados: "
+                          << turnoActual << std::endl;
                 break;
 
             case 0:
@@ -449,6 +577,10 @@ void Simulador::iniciar() {
 
             default:
                 std::cout << "\nOpcion no valida.\n";
+        }
+
+        if (opcion == 11) {
+            opcion = 0;
         }
 
     } while (opcion != 0);

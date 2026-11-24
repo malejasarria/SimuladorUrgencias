@@ -35,6 +35,8 @@ public:
     int getCantidad() const;
 
     void mostrarPila() const;
+
+    void vaciar();
 };
 
 #endif

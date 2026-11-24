@@ -3,6 +3,7 @@
 #define MEDICO_H
 
 #include <string>
+#include <vector>
 
 class Medico {
 
@@ -11,6 +12,8 @@ private:
     int jornadasTrabajadas;
     int turnosJornada;
     int totalTurnos;
+
+    std::vector<int> historialTurnos;
 
 public:
 
@@ -24,6 +27,7 @@ public:
     void iniciarJornada();
     void registrarTurno();
     void mostrarInformacion() const;
+
 };
 
 #endif

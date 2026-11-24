@@ -5,6 +5,7 @@
 Medico::Medico(std::string nombre) {
 
     this->nombre = nombre;
+
     jornadasTrabajadas = 0;
     turnosJornada = 0;
     totalTurnos = 0;
@@ -28,14 +29,20 @@ int Medico::getTotalTurnos() const {
 
 void Medico::iniciarJornada() {
 
+    if (jornadasTrabajadas > 0) {
+        historialTurnos.push_back(turnosJornada);
+    }
+
     jornadasTrabajadas++;
     turnosJornada = 0;
 }
 
 void Medico::registrarTurno() {
 
-    turnosJornada++;
-    totalTurnos++;
+    if (turnosJornada < 50) {
+        turnosJornada++;
+        totalTurnos++;
+    }
 }
 
 void Medico::mostrarInformacion() const {
@@ -52,4 +59,18 @@ void Medico::mostrarInformacion() const {
 
     std::cout << "Total de turnos: "
               << totalTurnos << std::endl;
+
+    std::cout << "\n--- HISTORIAL DE JORNADAS ---\n";
+
+    for (int i = 0; i < static_cast<int>(historialTurnos.size()); i++) {
+
+        std::cout << "Jornada " << i + 1 << ": "
+                  << historialTurnos[i] << " turnos\n";
+    }
+
+    if (jornadasTrabajadas > 0) {
+
+        std::cout << "Jornada " << jornadasTrabajadas << ": "
+                  << turnosJornada << " turnos (actual)\n";
+    }
 }

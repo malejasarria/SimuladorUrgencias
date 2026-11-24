@@ -31,6 +31,7 @@ private:
 
     void mostrarEstado();
     void finalizarTurno();
+    bool puedeRealizarAccion() const;
 
 public:
     Simulador(std::string nombreMedico);
@@ -43,6 +44,7 @@ public:
     void tratarPaciente();
     void darAltaPaciente();
     void buscarPaciente();
+    void cambiarMedico();
 };
 
 #endif

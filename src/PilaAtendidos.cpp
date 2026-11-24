@@ -16,13 +16,7 @@ PilaAtendidos::PilaAtendidos() {
 
 PilaAtendidos::~PilaAtendidos() {
 
-    while (tope != nullptr) {
-
-        Nodo* temporal = tope;
-        tope = tope->siguiente;
-
-        delete temporal;
-    }
+    vaciar();
 }
 
 void PilaAtendidos::apilar(std::shared_ptr<Paciente> paciente) {
@@ -99,4 +93,18 @@ void PilaAtendidos::mostrarPila() const {
 
         actual = actual->siguiente;
     }
+}
+
+void PilaAtendidos::vaciar() {
+
+    while (tope != nullptr) {
+
+        Nodo* temporal = tope;
+
+        tope = tope->siguiente;
+
+        delete temporal;
+    }
+
+    cantidad = 0;
 }
