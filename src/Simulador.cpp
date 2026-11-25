@@ -1,11 +1,14 @@
 
+
 #include "../include/Simulador.h"
 #include <iostream>
 #include <memory>
 #include <limits>
 #include <vector>
+#include <cctype>
+#include <iomanip>
+#include <fstream>
 
-// CONSTRUCTOR DEL SIMULADOR
 Simulador::Simulador(std::string nombreMedico) {
 
     medicoActual = nullptr;
@@ -68,6 +71,7 @@ void Simulador::finalizarTurno() {
     for (const auto& paciente : perdidos) {
 
         paciente->asignarMedico(medicoActual->getNombre());
+        paciente->cambiarEstado("Perdido");
 
         pacientesPerdidos++;
 
@@ -452,6 +456,8 @@ void Simulador::mostrarEstado() {
 
     std::cout << "\n--- COLA DE PRIORIDAD ---\n";
 
+    colaPrioridad.mostrarResumen();
+
     colaPrioridad.mostrarCola();
 
     std::cout << "\n--- RESUMEN ---\n";
@@ -477,111 +483,141 @@ void Simulador::mostrarEstado() {
 // MENU PRINCIPAL
 void Simulador::iniciar() {
 
-    int opcion = -1;
+    char opcion;
 
     do {
 
         mostrarEstado();
 
-        std::cout << "\n========== MENU DE ACCIONES ==========\n";
-
+        std::cout << "\n========== MENU DE ACCIONES ==========";
         std::cout << "\n1. Registrar paciente en Triage";
-        std::cout << "\n3. Recibir paciente (R)";
-        std::cout << "\n4. Mover izquierda (A)";
-        std::cout << "\n5. Mover derecha (D)";
-        std::cout << "\n6. Tratar paciente (T)";
-        std::cout << "\n7. Dar alta al paciente (X)";
-        std::cout << "\n8. Mostrar pacientes dados de alta (U)";
-        std::cout << "\n9. Buscar paciente por cedula (C)";
-        std::cout << "\n10. Cambiar de medico (O)";
-        std::cout << "\n11. Terminar turno anticipadamente (E)";
+        std::cout << "\nR. Recibir paciente";
+        std::cout << "\nA. Mover medico a la izquierda";
+        std::cout << "\nD. Mover medico a la derecha";
+        std::cout << "\nT. Tratar paciente";
+        std::cout << "\nX. Dar de alta al paciente";
+        std::cout << "\nU. Mostrar pacientes dados de alta";
+        std::cout << "\nC. Buscar paciente por cedula";
+        std::cout << "\nO. Cambiar de medico";
+        std::cout << "\nE. Terminar simulacion anticipadamente";
         std::cout << "\n0. Salir del programa";
 
         if (turnoActual >= 50) {
-
             std::cout << "\n\nATENCION: El medico completo sus 50 turnos.";
             std::cout << "\nSolo puede cambiar de medico o terminar.\n";
         }
 
-        std::cout << "\n\nSelecciona una opcion: ";
+        std::cout << "\n\nSelecciona una accion: ";
 
         if (!(std::cin >> opcion)) {
-
             std::cout << "\nEntrada no valida.\n";
-
             std::cin.clear();
-
             std::cin.ignore(
                 std::numeric_limits<std::streamsize>::max(),
                 '\n'
             );
-
             continue;
         }
 
+        opcion = static_cast<char>(std::toupper(static_cast<unsigned char>(opcion)));
+
         switch (opcion) {
 
-            case 1:
+            case '1':
                 registrarPaciente();
                 break;
 
-            case 3:
+            case 'R':
                 recibirPaciente();
                 break;
 
-            case 4:
+            case 'A':
                 moverIzquierda();
                 break;
 
-            case 5:
+            case 'D':
                 moverDerecha();
                 break;
 
-            case 6:
+            case 'T':
                 tratarPaciente();
                 break;
 
-            case 7:
+            case 'X':
                 darAltaPaciente();
                 break;
 
-            case 8:
-
+            case 'U':
                 std::cout << "\n========== PILA DE PACIENTES DADOS DE ALTA ==========\n";
-
                 pilaAtendidos.mostrarPila();
                 break;
 
-            case 9:
+            case 'C':
                 buscarPaciente();
                 break;
 
-            case 10:
+            case 'O':
                 cambiarMedico();
                 break;
 
-            case 11:
+            case 'E': {
+                std::cout << "\n========== REPORTE FINAL DE URGENCIAS ==========\n";
 
-                std::cout << "\nTurno terminado anticipadamente.\n";
+                std::cout << "Medico que termina la jornada: ";
+                if (medicoActual != nullptr) {
+                    std::cout << medicoActual->getNombre();
+                } else {
+                    std::cout << "Sin medico activo";
+                }
 
-                std::cout << "Medico: "
-                          << medicoActual->getNombre() << std::endl;
+                std::cout << "\nTurnos realizados: " << turnoActual << "/50\n";
+                std::cout << "Pacientes recibidos: " << pacientesRecibidos << "\n";
+                std::cout << "Pacientes dados de alta: " << pacientesDadosDeAlta << "\n";
+                std::cout << "Pacientes perdidos: " << pacientesPerdidos << "\n";
 
-                std::cout << "Turnos realizados: "
-                          << turnoActual << std::endl;
+                double promedioEspera = 0.0;
+                if (pacientesRecibidos > 0) {
+                    promedioEspera = static_cast<double>(tiempoEsperaTotal) / pacientesRecibidos;
+                }
+
+                std::cout << std::fixed << std::setprecision(2);
+                std::cout << "Tiempo promedio de espera: " << promedioEspera << " minutos\n";
+                std::cout << "Camas desocupadas al finalizar: "
+                          << camas.contarDisponibles() << " de 10\n";
+
+                std::ofstream archivo("reporte_urgencias.txt");
+                if (archivo.is_open()) {
+                    archivo << "REPORTE FINAL DE URGENCIAS\n";
+                    archivo << "Medico: ";
+                    if (medicoActual != nullptr) {
+                        archivo << medicoActual->getNombre();
+                    } else {
+                        archivo << "Sin medico activo";
+                    }
+                    archivo << "\nTurnos realizados: " << turnoActual << "/50\n";
+                    archivo << "Pacientes recibidos: " << pacientesRecibidos << "\n";
+                    archivo << "Pacientes dados de alta: " << pacientesDadosDeAlta << "\n";
+                    archivo << "Pacientes perdidos: " << pacientesPerdidos << "\n";
+                    archivo << std::fixed << std::setprecision(2);
+                    archivo << "Tiempo promedio de espera: " << promedioEspera << " minutos\n";
+                    archivo << "Camas desocupadas: " << camas.contarDisponibles() << " de 10\n";
+                    archivo.close();
+                    std::cout << "\nReporte guardado en reporte_urgencias.txt\n";
+                } else {
+                    std::cout << "\nNo se pudo guardar el archivo del reporte.\n";
+                }
+
+                std::cout << "Simulacion finalizada.\n";
                 break;
+            }
 
-            case 0:
+            case '0':
                 std::cout << "\nSimulador cerrado.\n";
                 break;
 
             default:
-                std::cout << "\nOpcion no valida.\n";
+                std::cout << "\nAccion no valida. Intenta nuevamente.\n";
         }
 
-        if (opcion == 11) {
-            opcion = 0;
-        }
-
-    } while (opcion != 0);
+    } while (opcion != 'E' && opcion != '0');
 }

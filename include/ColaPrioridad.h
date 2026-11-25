@@ -37,6 +37,8 @@ public:
 
     void mostrarCola() const;
 
+    void mostrarResumen() const;
+
     std::vector<std::shared_ptr<Paciente>>
     actualizarEsperaYRetirarPerdidos();
 };
